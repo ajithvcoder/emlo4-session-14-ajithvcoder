@@ -1,0 +1,35 @@
+# Environment Settings
+namespace: default
+environment: default
+hostname: fastapi.localhost
+modelName: "mambaout_femto.in1k"
+
+# Config Versions
+configVersions:
+  modelServer: v1
+  redis: v1
+
+# Web Server
+webServer:
+  image:
+    repository: web-server
+    tag: latest
+
+# Model Server
+modelServer:
+  image:
+    repository: model-server
+    tag: latest
+  resources:
+    memory: "2Gi"
+    cpu: "1000m"
+
+# Redis
+redis:
+  image:
+    repository: redis
+    tag: 7.4.1
+  resources:
+    memory: "200Mi"
+    cpu: "200m"
+  password: "default-password"
