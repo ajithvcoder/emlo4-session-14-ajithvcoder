@@ -8,8 +8,8 @@ import logging
 import requests
 
 import redis.asyncio as redis
-import torch
-import timm
+# import torch
+import onnxruntime as ort
 import numpy as np
 
 from PIL import Image
@@ -41,33 +41,92 @@ REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
 HOSTNAME = socket.gethostname()
+INPUT_SIZE = (224, 224)
+MEAN = np.array([0.485, 0.456, 0.406])
+STD = np.array([0.229, 0.224, 0.225])
+LABELS = ["Cat", "Dog"]
+
+class ModelInference:
+    def __init__(self, model_path):
+        """
+        Initialize ONNX model inference session
+        
+        Args:
+            model_path (str): Path to the ONNX model file
+        """
+        try:
+            print("Loading ONNX model...")
+            self.session = ort.InferenceSession(model_path)
+            
+            # Warm-up inference to ensure model is ready
+            self.session.run(
+                ["output"], 
+                {"input": np.random.randn(1, 3, *INPUT_SIZE).astype(np.float32)}
+            )
+            print("Model loaded successfully")
+        except Exception as e:
+            print(f"Error loading model: {str(e)}")
+            raise
+
+    def preprocess_image(self, image: Image.Image) -> np.ndarray:
+        """
+        Preprocess image for model inference
+        
+        Args:
+            image (PIL.Image): Input image
+        
+        Returns:
+            np.ndarray: Preprocessed image array
+        """
+        # Convert to RGB and resize
+        image = image.convert("RGB").resize(INPUT_SIZE)
+        
+        # Convert to numpy array and normalize
+        img_array = np.array(image).astype(np.float32) / 255.0
+        
+        # Apply mean and std normalization
+        img_array = (img_array - MEAN) / STD
+        
+        # Transpose to channel-first format
+        img_array = img_array.transpose(2, 0, 1)
+        
+        # Add batch dimension
+        return np.expand_dims(img_array, 0)
+
+    def predict(self, image: Image.Image) -> dict:
+        """
+        Perform model inference
+        
+        Args:
+            image (PIL.Image): Input image
+        
+        Returns:
+            dict: Prediction probabilities
+        """
+        processed_image = self.preprocess_image(image)
+        
+        outputs = self.session.run(
+            ["output"], 
+            {"input": processed_image.astype(np.float32)}
+        )
+        
+        # Process logits to probabilities
+        logits = outputs[0][0]
+        probabilities = np.exp(logits) / np.sum(np.exp(logits))
+        
+        return {LABELS[i]: float(prob) for i, prob in enumerate(probabilities)}
+
 
 @app.on_event("startup")
 async def initialize():
     global model, device, transform, categories, redis_pool
 
     logger.info(f"Initializing model server on host {HOSTNAME}")
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info(f"Using device: {device}")
-
     logger.info(f"Loading model: {MODEL_NAME}")
-    model = timm.create_model(MODEL_NAME, pretrained=True)
-    model = model.to(device)
-    model.eval()
+    model = ModelInference("mambaout_model.onnx")
+    # model = model.to(device)
+    # model.eval()
     logger.info(f"Model loaded successfully")
-
-    # Get model specific transforms
-    logger.info("Setting up model transforms")
-    data_config = timm.data.resolve_model_data_config(model)
-    transform = timm.data.create_transform(**data_config, is_training=False)
-
-    # Load ImageNet labels
-    logger.info("Loading ImageNet categories")
-    url = "https://storage.googleapis.com/bit_models/ilsvrc2012_wordnet_lemmas.txt"
-    categories = requests.get(url).text.strip().split("\n")
-    # print(categories)
-    logger.info(f"Loaded {len(categories)} categories")
 
     # Redis setup
     logger.info(f"Creating Redis connection pool: host={REDIS_HOST}, port={REDIS_PORT}")
@@ -93,23 +152,18 @@ def get_redis():
 def predict(inp_img: Image) -> Dict[str, float]:
     logger.debug("Starting prediction")
     img = inp_img.convert("RGB")
-    img_tensor = transform(img).unsqueeze(0).to(device)
-
+    result = {"response": "error"}
     # inference
-    with torch.no_grad():
-        logger.debug("Running inference")
-        out = model(img_tensor)
-        probabilities = torch.nn.functional.softmax(out[0], dim=0)
 
-        # Get top predictions
-        top_prob, top_catid = torch.topk(probabilities, 5)
-        confidences = {
-            categories[idx.item()]: float(prob)
-            for prob, idx in zip(top_prob, top_catid)
-        }
+    logger.debug("Running inference")
+    predictions = model.predict(img)
+    top_class = max(predictions, key=predictions.get)
+    confidence = predictions[top_class]
 
-    logger.debug(f"Prediction complete. Top class: {list(confidences.keys())[0]}")
-    return confidences
+    result = {"class": top_class, "confidence": confidence}
+
+    logger.debug(f"Prediction complete. Top class: {result}")
+    return result
 
 async def write_to_cache(file: bytes, result: Dict[str, float]) -> None:
     cache = get_redis()

@@ -2,3 +2,5 @@ fastapi[all]==0.115.6
 timm==1.0.12
 redis==5.2.1
 requests
+gdown
+onnxruntime
