@@ -70,7 +70,10 @@ Docker network is needed for communication between two containers
 
 Model server
 
-Note: i am downloading model inside docker file so dont mount anything in model-server else download in local also and then mount
+Note:
+
+1. I am downloading model inside docker file so dont mount anything in model-server else download in local also and then mount.
+2. Modify the server port.
 
 - `docker run -it --network my_network -v /home/ajith/mlops/course/emlo_play/emlo4-s14/emlo4-session-14-ajithvcoder/src/model-server:/opt/src -p8000:8000 model-server bash`
 - `python server.py`
@@ -92,7 +95,7 @@ Note: remember @ before the filepath
 
 ### Minikube development
 
-- minikube start
+- `minikube start`
 
 Add alias for easier cli work
 
@@ -108,6 +111,10 @@ Kubernetes environment build docker images
 Inside `dev/minikube-dev` you can run below command for testing all services
 
 - `kubectl apply -f .`
+
+After testing
+
+- `kubectl delete -f .`
 
 ### Deploy with HELM
 
@@ -284,7 +291,4 @@ Reports of all commands given in assignment
 1. Ajith Kumar V (myself)
 2. Pravin Sagar
 3. Hema M
-
-
-
 
