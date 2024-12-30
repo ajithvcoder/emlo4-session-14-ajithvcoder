@@ -3,6 +3,7 @@ import zlib
 import json
 import logging
 import socket
+import traceback
 
 import redis.asyncio as redis
 import httpx
@@ -77,21 +78,23 @@ async def check_cached(image: bytes):
 async def classify_imagenet(image: Annotated[bytes, File()]):
     logger.info("Received classification request")
     infer_cache = await check_cached(image)
-
+    # infer_cache = None
     if infer_cache == None:
         logger.info("Making request to model server")
         async with httpx.AsyncClient() as client:
             try:
                 url = f"{MODEL_SERVER_URL}/infer"
                 files = {"image": image}
-
+                logger.info("sending files")
                 logger.debug(f"Sending request to model server: {url}")
                 response = await client.post(url, files=files)
+                logger.info("got response")
                 response.raise_for_status()
 
                 logger.info("Successfully received model prediction")
                 return response.json()
             except Exception as e:
+                traceback.print_exc()
                 logger.error(f"Model server request failed: {str(e)}")
                 raise HTTPException(status_code=500, detail="Error from Model Endpoint")
 

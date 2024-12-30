@@ -1,4 +1,4 @@
-FROM satyajitghana/pytorch:2.3.1
+FROM python:3.12
 
 WORKDIR /opt/src
 

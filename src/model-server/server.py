@@ -162,7 +162,7 @@ def predict(inp_img: Image) -> Dict[str, float]:
 
     result = {"class": top_class, "confidence": confidence}
 
-    logger.debug(f"Prediction complete. Top class: {result}")
+    logger.info(f"Prediction complete. Top class: {result}")
     return result
 
 async def write_to_cache(file: bytes, result: Dict[str, float]) -> None:

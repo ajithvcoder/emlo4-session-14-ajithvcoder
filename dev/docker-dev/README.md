@@ -4,17 +4,22 @@
 
 - `docker build -t model-server -f Dockerfile.model-server .`
 - `docker build -t web-server -f Dockerfile.web-server .`
+- `docker network create my_network`
+
+Docker network is needed for communication between two containers
 
 **Start Servers**
 
 Model server
 
-- `docker run -it -v /home/ajith/mlops/course/emlo_play/emlo4-s14/dev-place/src/model-server:/opt/src -p8000:8000 model-server bash`
+Note: i am downloading model inside docker file so dont mount anything in model-server else download in local also and then mount
+
+- `docker run -it --network my_network -v /home/ajith/mlops/course/emlo_play/emlo4-s14/emlo4-session-14-ajithvcoder/src/model-server:/opt/src -p8000:8000 model-server bash`
 - `python server.py`
 
 Web server
 
-- `docker run -it -v /home/ajith/mlops/course/emlo_play/emlo4-s14/dev-place/src/web-server:/opt/src -p9000:9000 web-server bash`
+- `docker run -it --network my_network  -v /home/ajith/mlops/course/emlo_play/emlo4-s14/emlo4-session-14-ajithvcoder/src/web-server:/opt/src -p9000:9000 web-server bash`
 - `python server.py`
 
 **Testing both services**

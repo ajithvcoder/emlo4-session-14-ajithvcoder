@@ -2,12 +2,20 @@
 
 - minikube start
 
+Add alias for easier cli work
+
+- `alias kubectl="minikube kubectl --"`
+
 Kubernetes environment build docker images
 
 - `eval $(minikube docker-env)`
 - `docker build --platform linux/amd64 -t model-server -f Dockerfile.model-server  .`
 - `docker build --platform linux/amd64 -t web-server -f Dockerfile.web-server  .`
 - `eval $(minikube docker-env -u)`
+
+Apply manifests
+
+- `kubectl apply -f .`
 
 Ensure that in `kubectl get pod` all `three` pods are in running state
 
