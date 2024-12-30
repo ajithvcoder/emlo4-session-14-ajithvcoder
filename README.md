@@ -172,9 +172,6 @@ Exposes ports to host for testing and usage
 
 **Ingress Services**
 
-- `minikube addons enable ingress`
-- `minikube tunnel`
-
 In `/etc/hosts` add
 
 ```
@@ -184,6 +181,11 @@ In `/etc/hosts` add
 ```
 
 - Also do in  `C:\Windows\System32\drivers\etc\hosts` if you are in windows and using wsl. if not u can reach through curl in wsl but not in browser.
+
+- `minikube addons enable ingress`
+- `minikube tunnel`
+
+- Note: In screenshot its accessible at `http://fastapi.prod` 
 
 ![](./assets/snap_ingress_test.png)
 
