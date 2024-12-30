@@ -6,11 +6,11 @@ Note: **I have completed actual assignment and first part of bonus assignment(`n
 
 - [Requirements](#requirements)
 - [Development Method](#development-method)
-    - [Architecture](#architecture)
-    - [Docker file development and service development](#classifier-model-gen-and-fast-api-local-testing)
-    - [Minikube development](#classifier-model-gen-and-fast-api-local-testing)
-    - [Deploy with HELM](#classifier-model-gen-and-fast-api-local-testing)
-    - [Bonus assignment](#fast-api-service)
+    - [Architecture Diagram](#architecture-diagram)
+    - [Docker file development-Model-service development-Web-service development](#docker-file-development-model-service-development-web-service-development)
+    - [Minikube development](#minikube-development)
+    - [Deploy with HELM](#deploy-with-helm)
+    - [Bonus assignment](#bonus-assignment)
 - [Learnings](#learnings)
 - [Results Screenshots](#results-screenshots)
 
@@ -56,7 +56,7 @@ Note:
 
 - You can refer dev/minikube-dev for minikube development and manifest file related testings. No helm charts there
 
-### Docker file development - model-service development - web-service development
+### Docker file development-Model-service development-Web-service development
 
 **Build**
 
