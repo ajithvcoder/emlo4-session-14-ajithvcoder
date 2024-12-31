@@ -34,7 +34,8 @@ HOSTNAME = socket.gethostname()
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
-MODEL_SERVER_URL = os.environ.get("MODEL_SERVER_URL", "http://localhost:8000")
+MODEL_SERVER_URL = os.environ.get("MODEL_SERVER_URL", "http://localhost:80")
+# MODEL_SERVER_URL = "http://model-server-service"
 
 @app.on_event("startup")
 async def initialize():
@@ -74,14 +75,15 @@ async def check_cached(image: bytes):
 
     return json.loads(data) if data else None
 
-@app.post("/classify-imagenet")
-async def classify_imagenet(image: Annotated[bytes, File()]):
+@app.post("/classify-catdog")
+async def classify_catdog(image: Annotated[bytes, File()]):
     logger.info("Received classification request")
+    logger.info("MODEL_SERVER_URL-", MODEL_SERVER_URL)
     infer_cache = await check_cached(image)
     # infer_cache = None
     if infer_cache == None:
         logger.info("Making request to model server")
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
             try:
                 url = f"{MODEL_SERVER_URL}/infer"
                 files = {"image": image}
@@ -113,7 +115,7 @@ async def health_check():
 
     try:
         # Test Model Server connection
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
             response = await client.get(f"{MODEL_SERVER_URL}/health")
             response.raise_for_status()
             model_health = response.json()

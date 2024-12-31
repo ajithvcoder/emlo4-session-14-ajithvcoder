@@ -11,16 +11,18 @@ Kubernetes environment build docker images
 - `eval $(minikube docker-env)`
 - `docker build --platform linux/amd64 -t model-server -f Dockerfile.model-server  .`
 - `docker build --platform linux/amd64 -t web-server -f Dockerfile.web-server  .`
+- `docker build --platform linux/amd64 -t ui-server -f Dockerfile.ui-server  .`
 - `eval $(minikube docker-env -u)`
 
 Apply manifests
 
 - `kubectl apply -f .`
 
-Ensure that in `kubectl get pod` all `three` pods are in running state
+Ensure that in `kubectl get pod` all `four` pods are in running state
 
 - `minikube service model-server-service`
 - `minikube service web-server-service`
+- `minikube service ui-server-service`
 
 **Debugging pods or server**
 
@@ -28,16 +30,24 @@ Ensure that in `kubectl get pod` all `three` pods are in running state
 
 **Testing**
 
-- `curl -X POST <http://127.0.0.1:43139/classify-imagenet> -H "Content-Type: multipart/form-data" -F "image=@dog.jpg"`
+- First request might take some time(~30 seconds) but successive request will be faster
 
-```
-{"golden_retriever":0.40282928943634033,"Brittany_spaniel":0.2731628119945526,"vizsla, Hungarian_pointer":0.03351568430662155,"Sussex_spaniel":0.017249081283807755,"Chesapeake_Bay_retriever":0.011031302623450756}
-```
+- `curl -X POST <http://127.0.0.1:43139/classify-catdog> -H "Content-Type: multipart/form-data" -F "image=@dog.jpg"`
+
+    ```
+    {"class": dog, "confidence": 0.9892888878}
+    ```
+
+    ![](../../assets/snap_dev_minikube.png)
 
 **Ingress Services**
 
+- `minikube addons enable metrics-server`
+- `minikube addons enable dashboard`
 - `minikube addons enable ingress`
 - `minikube tunnel`
+
+- `minkube dashboard` - monitoring pods
 
 In `/etc/hosts` add
 

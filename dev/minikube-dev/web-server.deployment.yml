@@ -19,8 +19,11 @@ spec:
         image: web-server:latest
         imagePullPolicy: Never
         resources:
+          requests:
+            memory: "300Mi"     # Increased for dev environment
+            cpu: "400m"         # Base CPU request
           limits:
-            memory: "200Mi"
+            memory: "600Mi"
             cpu: "500m"
         ports:
           - containerPort: 80
