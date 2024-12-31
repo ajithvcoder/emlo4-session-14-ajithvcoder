@@ -49,7 +49,7 @@ Using Helm charts, we are deploying a `cat-dog model service` hosted on a FastAP
 - Use ngrok ingress to expose your deployment to internet
 - Deploy a basic frontend in Next.JS to do model inferencing
 
-### Architecture Diagram #TODO
+### Architecture Diagram
 
 ![](./assets/snap_architecture.png)
 
@@ -310,7 +310,7 @@ Reports of all commands given in assignment
 
 - [reports](./report.md)
 
-**Architecture #todo**
+**Architecture**
 
 ![](./assets/snap_architecture.png)
 
